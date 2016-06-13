@@ -17,7 +17,8 @@ import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
+
 
 import com.twilio.client.Connection;
 import com.twilio.client.ConnectionListener;
@@ -50,8 +51,10 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
   }
 
   private void sendEvent(String eventName, @Nullable WritableMap params) {
-    _reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-            .emit(eventName, params);
+    Log.d(TAG, "event sent " + eventName);
+    _reactContext
+      .getJSModule(RCTNativeAppEventEmitter.class)
+      .emit(eventName, params);
   }
 
   @Override
@@ -94,6 +97,8 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
           Log.e(TAG, e.getMessage());
         }
       });
+    } else {
+      sendEvent("deviceReady", null);
     }
   }
 
@@ -118,8 +123,10 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
         Intent intent = new Intent(_reactContext.getApplicationContext(), TwilioModule.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(_reactContext.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         _phone.setIncomingIntent(pendingIntent);
+        sendEvent("deviceReady", null);
       } else {
         _phone.updateCapabilityToken(capabilityToken);
+        sendEvent("deviceUpdated", null);
       }
 
       // TextView clientNameTextView = (TextView) capabilityPropertiesView.findViewById(R.id.client_name_registered_text);
@@ -132,7 +139,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
       // incomingCapabilityTextView.setText("Incoming Capability: " +Boolean.toString(TwilioModule.this.clientProfile.isAllowIncoming()));
 
     } catch (Exception e) {
-      Log.e(TAG, "An error has occured updating or creating a Device: \n" + e.toString());
+      Log.e(TAG, "An error has occurred updating or creating a Device: \n" + e.toString());
     }
   }
 
@@ -140,6 +147,8 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
   public void connect(ReadableMap readableMap) {
     if (_phone != null) {
       _connection = _phone.connect(covnertToNativeMap(readableMap), this);
+    } else {
+      Log.e(TAG, "Device is null");
     }
   }
 
@@ -197,12 +206,14 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
   @Override
   public void onStartListening(Device device) {
     Log.d(TAG, "Device has started listening for incoming connections");
+    sendEvent("deviceDidStartListening", null);
   }
 
   /* Device Listener */
   @Override
   public void onStopListening(Device device) {
     Log.d(TAG, "Device has stopped listening for incoming connections");
+    sendEvent("deviceDidStopListening", null);
   }
 
   /* Device Listener */
@@ -210,6 +221,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
   public void onStopListening(Device device, int errorCode, String error) {
     Log.e(TAG, String.format("Device has encountered an error and has stopped" +
             " listening for incoming connections: %s", error));
+    sendEvent("deviceDidStopListening", null);
   }
 
   /* Device Listener */
