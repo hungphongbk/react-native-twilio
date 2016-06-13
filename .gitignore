@@ -2,3 +2,10 @@
 xcuserdata
 Pods
 *.lock
+
+# Android/IJ
+#
+*.iml
+.gradle
+.idea
+local.properties

@@ -51,10 +51,10 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
   }
 
   private void sendEvent(String eventName, @Nullable WritableMap params) {
-    Log.d(TAG, "event sent " + eventName);
-    _reactContext
+    getReactApplicationContext()
       .getJSModule(RCTNativeAppEventEmitter.class)
       .emit(eventName, params);
+    Log.d(TAG, "event sent " + eventName);
   }
 
   @Override
@@ -120,9 +120,9 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
          *  If you're using a BroadcastReceiver, override BroadcastReceiver.onReceive().
          */
 
-        Intent intent = new Intent(_reactContext.getApplicationContext(), TwilioModule.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(_reactContext.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        _phone.setIncomingIntent(pendingIntent);
+//        Intent intent = new Intent(_reactContext.getApplicationContext(), TwilioModule.class);
+//        PendingIntent pendingIntent = PendingIntent.getActivity(_reactContext.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//        _phone.setIncomingIntent(pendingIntent);
         sendEvent("deviceReady", null);
       } else {
         _phone.updateCapabilityToken(capabilityToken);
