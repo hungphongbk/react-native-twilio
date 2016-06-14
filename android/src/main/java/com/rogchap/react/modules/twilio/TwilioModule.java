@@ -81,6 +81,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
 
   @ReactMethod
   public void initWithToken(final String capabilityToken) {
+    Twilio.setLogLevel(Log.DEBUG);
     if (!Twilio.isInitialized()) {
       Twilio.initialize(_reactContext.getApplicationContext(), new Twilio.InitListener() {
         @Override
