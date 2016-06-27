@@ -1,11 +1,18 @@
 package com.rogchap.react.modules.twilio;
 
-import javax.annotation.Nullable;
+import android.support.annotation.Nullable;
 
 import android.Manifest;
 import android.util.Log;
 import android.app.PendingIntent;
 import android.content.Intent;
+
+import android.content.Context;
+import android.content.Intent;
+// import android.os.Parcelable;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
+import android.app.PendingIntent;
 
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -36,7 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class TwilioModule extends ReactContextBaseJavaModule implements DeviceListener, ConnectionListener {
+public class TwilioModule extends ReactContextBaseJavaModule implements ConnectionListener, DeviceListener {
 
   private static final String TAG = TwilioModule.class.getName();
 
@@ -44,10 +51,43 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
   private Device _phone;
   private Connection _connection;
   private Connection _pendingConnection;
+  private IntentReceiver _receiver;
+
+  public class IntentReceiver extends BroadcastReceiver {
+    private ConnectionListener _cl;
+
+    public IntentReceiver(ConnectionListener connectionListener) {
+      this._cl = connectionListener;
+    }
+
+    public void onReceive(Context context, Intent intent) {
+      Connection _pendingConnection = intent.getParcelableExtra("com.twilio.client.Connection");
+//      Device device = intent.getParcelableExtra(Device.EXTRA_DEVICE);
+//      Connection _pendingConnection = intent.getParcelableExtra(Device.EXTRA_CONNECTION);
+      _pendingConnection.setConnectionListener(this._cl);
+
+      Map<String, String> connParams = _pendingConnection.getParameters();
+      WritableMap params = Arguments.createMap();
+      for (Map.Entry<String, String> entry : connParams.entrySet()) {
+        params.putString(entry.getKey(), entry.getValue());
+      }
+      sendEvent("deviceDidReceiveIncoming", params);
+
+      _pendingConnection.accept();
+      _connection = _pendingConnection;
+      _pendingConnection = null;
+    }
+  }
 
   public TwilioModule(ReactApplicationContext reactContext) {
     super(reactContext);
+
     _reactContext = reactContext;
+    this._reactContext = reactContext;
+    this._receiver = new IntentReceiver(this);
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addAction("com.rogchap.react.modules.twilio.incoming");
+    this._reactContext.registerReceiver(this._receiver, intentFilter);
   }
 
   private void sendEvent(String eventName, @Nullable WritableMap params) {
@@ -73,6 +113,10 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
       while (line != null) {
         sb.append(line);
       }
+      // String line = "";
+      // while ((line = reader.readLine()) != null) {
+      //   sb.append(line);
+      // }
     } catch (Exception e) {
       Log.e(TAG, e.getMessage());
     }
@@ -80,14 +124,36 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
   }
 
   @ReactMethod
-  public void initWithToken(final String capabilityToken) {
-    Twilio.setLogLevel(Log.DEBUG);
+  public void initWithToken(final String token) {
+    final DeviceListener dl = this;
+
     if (!Twilio.isInitialized()) {
-      Twilio.initialize(_reactContext.getApplicationContext(), new Twilio.InitListener() {
+      // Twilio.initialize(_reactContext.getApplicationContext(), new Twilio.InitListener() {
+      Twilio.initialize(_reactContext, new Twilio.InitListener() {
         @Override
         public void onInitialized() {
+          Twilio.setLogLevel(Log.DEBUG);
           try {
-            createDevice(capabilityToken);
+            if (_phone == null) {
+              _phone = Twilio.createDevice(token, dl);
+              /*
+               * Providing a PendingIntent to the newly create Device, allowing you to receive incoming calls
+               *
+               *  What you do when you receive the intent depends on the component you set in the Intent.
+               *
+               *  If you're using an Activity, you'll want to override Activity.onNewIntent()
+               *  If you're using a Service, you'll want to override Service.onStartCommand().
+               *  If you're using a BroadcastReceiver, override BroadcastReceiver.onReceive().
+               */
+              Intent intent = new Intent();
+              intent.setAction("com.rogchap.react.modules.twilio.incoming");
+              PendingIntent pi = PendingIntent.getBroadcast(_reactContext, 0, intent, 0);
+              _phone.setIncomingIntent(pi);
+              sendEvent("deviceReady", null);
+            } else {
+              // _phone.updateCapabilityToken(token);
+              // sendEvent("deviceUpdated", null);
+            }
           } catch (Exception e) {
             Log.e(TAG, e.getMessage());
           }
@@ -100,47 +166,6 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
       });
     } else {
       sendEvent("deviceReady", null);
-    }
-  }
-
-  /*
-   * Create a Device or update the capabilities of the current Device
-   */
-  private void createDevice(String capabilityToken) {
-    try {
-      if (_phone == null) {
-        _phone = Twilio.createDevice(capabilityToken, this);
-
-        /*
-         * Providing a PendingIntent to the newly create Device, allowing you to receive incoming calls
-         *
-         *  What you do when you receive the intent depends on the component you set in the Intent.
-         *
-         *  If you're using an Activity, you'll want to override Activity.onNewIntent()
-         *  If you're using a Service, you'll want to override Service.onStartCommand().
-         *  If you're using a BroadcastReceiver, override BroadcastReceiver.onReceive().
-         */
-
-//        Intent intent = new Intent(_reactContext.getApplicationContext(), TwilioModule.class);
-//        PendingIntent pendingIntent = PendingIntent.getActivity(_reactContext.getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        _phone.setIncomingIntent(pendingIntent);
-        sendEvent("deviceReady", null);
-      } else {
-        _phone.updateCapabilityToken(capabilityToken);
-        sendEvent("deviceUpdated", null);
-      }
-
-      // TextView clientNameTextView = (TextView) capabilityPropertiesView.findViewById(R.id.client_name_registered_text);
-      // clientNameTextView.setText("Client Name: " + TwilioModule.this.clientProfile.getName());
-
-      // TextView outgoingCapabilityTextView = (TextView) capabilityPropertiesView.findViewById(R.id.outgoing_capability_registered_text);
-      // outgoingCapabilityTextView.setText("Outgoing Capability: " +Boolean.toString(TwilioModule.this.clientProfile.isAllowOutgoing()));
-
-      // TextView incomingCapabilityTextView = (TextView) capabilityPropertiesView.findViewById(R.id.incoming_capability_registered_text);
-      // incomingCapabilityTextView.setText("Incoming Capability: " +Boolean.toString(TwilioModule.this.clientProfile.isAllowIncoming()));
-
-    } catch (Exception e) {
-      Log.e(TAG, "An error has occurred updating or creating a Device: \n" + e.toString());
     }
   }
 
@@ -181,7 +206,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements DeviceLi
   @ReactMethod
   public void accept() {
     _pendingConnection.accept();
-    _pendingConnection.setConnectionListener(this);
+    _pendingConnection.setConnectionListener(_receiver._cl);
     _connection = _pendingConnection;
     _pendingConnection = null;
   }

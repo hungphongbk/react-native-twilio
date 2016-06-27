@@ -6,10 +6,20 @@ android {
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 23
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
+        ndk {
+          abiFilters "armeabi-v7a", "x86"
+        }
     }
+
+    signingConfigs {
+        debug {
+            storeFile file("${System.env.HOME}/.android/debug.keystore")
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -20,5 +30,5 @@ android {
 
 dependencies {
     compile 'com.facebook.react:react-native:+'
-    compile files('libs/twilioclient-android.jar')
+    compile 'com.twilio:client-android:1.2.14'
 }
