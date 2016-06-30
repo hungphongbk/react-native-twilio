@@ -177,6 +177,9 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
             _connection = _phone.connect(covnertToNativeMap(readableMap), this);
         } else {
             Log.e(TAG, "Device is null");
+            WritableMap errors = Arguments.createMap();
+            errors.putString("err", "Device is null");
+            sendEvent("connectionDidFail", errors);
         }
     }
 
