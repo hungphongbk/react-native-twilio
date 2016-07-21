@@ -2,6 +2,7 @@
 xcuserdata
 Pods
 *.lock
+build/
 
 # Android/IJ
 #

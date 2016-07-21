@@ -10,6 +10,8 @@ You need to make the Twilio Python server run
 
 ```bash
 npm install
-react-native run-android
+ENVFILE=.env react-native run-android
+sudo ./adb reverse tcp:8081 tcp:8081
+npm start
 ```
 
