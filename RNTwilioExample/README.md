@@ -13,6 +13,14 @@ Download and run a simple server with your Twilio credentials.
 For example you can use:
 [mobile-quickstart](https://github.com/twilio/mobile-quickstart)
 
+The app only needs two endpoints running:
+
+	# TwiML response for incoming/outgoing calls
+	GET or POST http://localhost:5000/calls/
+	# generate a JWT token for the app to initialise the device
+	GET http://localhost:5000/token/
+
+
 You will need to setup an TwiML app through the Twilio Console and use the `APP_ID` for the server configuration.
 
 You will need to expose the server to the outside so that Twilio can contact it when it looks for the TwiML to answer calls. You can use [ngrok](https://ngrok.com/) to do that
