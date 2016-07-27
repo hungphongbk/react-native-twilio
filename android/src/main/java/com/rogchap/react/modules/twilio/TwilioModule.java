@@ -232,6 +232,13 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
             _connection.setMuted(isMuted);
         }
     }
+    
+    @ReactMethod
+    public void sendDigits(String digits) {
+        if (_connection != null && _connection.getState() == Connection.State.CONNECTED) {
+            _connection.sendDigits(digits);
+        }
+    }
 
     /* Device Listener */
     @Override

@@ -62,6 +62,12 @@ RCT_EXPORT_METHOD(setMuted:(BOOL)isMuted) {
     }
 }
 
+RCT_EXPORT_METHOD(sendDigits:(NSString *) digits) {
+    if (_connection && _connection.state == TCConnectionStateConnected) {
+        [_connection sendDigits:digits];
+    }
+}
+
 #pragma mark - TCDeviceDelegate
 
 -(void)device:(TCDevice *)device didReceiveIncomingConnection:(TCConnection *)connection {
