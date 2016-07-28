@@ -146,7 +146,19 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
                 }
             });
         } else {
-            sendEvent("deviceReady", null);
+            try {
+                if (_phone != null) {
+                    _phone.release();
+                }
+                _phone = Twilio.createDevice(token, dl);
+                Intent intent = new Intent();
+                intent.setAction("com.rogchap.react.modules.twilio.incoming");
+                PendingIntent pi = PendingIntent.getBroadcast(_reactContext, 0, intent, 0);
+                _phone.setIncomingIntent(pi);
+                sendEvent("deviceReady", null);
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
     }
 
