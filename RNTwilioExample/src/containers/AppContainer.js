@@ -57,7 +57,7 @@ const AppContainer = React.createClass({
         }
 
         // this.state.callToNumber = this.props.callToNumber
-        this.state.callToNumber = ''
+        this.state.callToNumber = '+447423490383'
 
         let callNumber = () => {
             this.props.telephonyActions.makeCallStart(this.state.callToNumber)
