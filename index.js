@@ -41,6 +41,9 @@ let Twilio = {
   setMuted(isMuted) {
     TwilioRCT.setMuted(isMuted);
   },
+  sendDigits(digits) {
+    TwilioRCT.sendDigits(digits);
+  },
   addEventListener(type, handler) {
     _eventHandlers[type].set(handler, NativeAppEventEmitter.addListener(
       type, rtn => {
