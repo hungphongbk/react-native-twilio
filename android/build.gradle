@@ -33,6 +33,6 @@ android {
 }
 
 dependencies {
-    compile 'com.facebook.react:react-native:+'
+    compile 'com.facebook.react:react-native:+' // from node_modules
     compile 'com.twilio:client-android:1.2.16'
 }

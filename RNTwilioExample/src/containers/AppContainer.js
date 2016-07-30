@@ -4,6 +4,7 @@ import React, {PropTypes} from 'react'
 import {
     StyleSheet,
     Text,
+    TouchableOpacity,
     View,
 } from 'react-native'
 import { connect } from 'react-redux'
@@ -14,7 +15,6 @@ import {
     makeCallStart,
 } from '../actions'
 
-import Button from 'react-native-button'
 import InputPrompt from '../components/InputPrompt'
 
 const AppContainer = React.createClass({
@@ -32,11 +32,11 @@ const AppContainer = React.createClass({
         if (this.props.clientName) {
             return <View>
                 <Text>Telephone NOT READY</Text>
-                <Button
-                    containerStyle={styles.button}
+                <TouchableOpacity
+                    style={styles.button}
                     onPress={() => {this.props.telephonyActions.initTelephonyStart(this.props.clientName)}}>
                     <Text style={styles.buttonText}>init device with token</Text>
-                </Button>
+                </TouchableOpacity>
             </View>
         }
     },
@@ -76,11 +76,11 @@ const AppContainer = React.createClass({
                 keyboardType="phone-pad"
                 onSubmit={onSubmit}
                 />
-                <Button
-                    containerStyle={styles.button}
+                <TouchableOpacity
+                    style={styles.button}
                     onPress={() => {callNumber()}}>
                     <Text style={styles.buttonText}>DIAL</Text>
-                </Button>
+                </TouchableOpacity>
             </View>
     },
 

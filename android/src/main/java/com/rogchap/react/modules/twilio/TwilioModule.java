@@ -185,7 +185,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     @ReactMethod
     public void connect(ReadableMap readableMap) {
         if (_phone != null) {
-            _connection = _phone.connect(covnertToNativeMap(readableMap), this);
+            _connection = _phone.connect(convertToNativeMap(readableMap), this);
         } else {
             Log.e(TAG, "Device is null");
             WritableMap errors = Arguments.createMap();
@@ -194,7 +194,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
         }
     }
 
-    private Map<String, String> covnertToNativeMap(ReadableMap readableMap) {
+    private Map<String, String> convertToNativeMap(ReadableMap readableMap) {
         Map<String, String> hashMap = new HashMap<String, String>();
         ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
         while (iterator.hasNextKey()) {
