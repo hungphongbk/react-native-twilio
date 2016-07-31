@@ -15,7 +15,7 @@ export const DEVICE_LISTENING_STOP    = 'DEVICE_LISTENING_STOP'
 export const DEVICE_RECEIVED_INCOMING = 'DEVICE_RECEIVED_INCOMING'
 
 export function connectionDidStartConnecting(params) {
-    To = ''
+    let To = ''
     if (params && params.To) {
         To = params.To
     }
