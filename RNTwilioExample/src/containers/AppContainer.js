@@ -14,6 +14,7 @@ import {
     initTelephonyStart,
     makeCallStart,
     endCall,
+    acceptCall,
 } from '../actions'
 
 import InputPrompt from '../components/InputPrompt'
@@ -89,6 +90,10 @@ const AppContainer = React.createClass({
         this.props.telephonyActions.endCall()
     },
 
+    answer() {
+        this.props.telephonyActions.acceptCall()
+    },
+
     renderCallProgress() {
         if (this.props.deviceReady === false) {
             return null
@@ -107,6 +112,11 @@ const AppContainer = React.createClass({
         if (this.props.callStatus === 'in') {
             return <View>
                 <Text>{this.props.callFromNumber} is calling</Text>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {this.answer()}}>
+                    <Text style={styles.buttonText}>Answer</Text>
+                </TouchableOpacity>
             </View>
         }
     },
@@ -204,6 +214,6 @@ function mapStateToProps(state) {
 export default connect(
     mapStateToProps,
     dispatch => ({
-        telephonyActions: bindActionCreators({initTelephonyStart, makeCallStart, endCall}, dispatch),
+        telephonyActions: bindActionCreators({initTelephonyStart, makeCallStart, endCall, acceptCall}, dispatch),
     })
 )(AppContainer)
