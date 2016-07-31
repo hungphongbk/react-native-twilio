@@ -13,6 +13,7 @@ import {bindActionCreators} from 'redux'
 import {
     initTelephonyStart,
     makeCallStart,
+    endCall,
 } from '../actions'
 
 import InputPrompt from '../components/InputPrompt'
@@ -84,6 +85,10 @@ const AppContainer = React.createClass({
             </View>
     },
 
+    hangup() {
+        this.props.telephonyActions.endCall()
+    },
+
     renderCallProgress() {
         if (this.props.deviceReady === false) {
             return null
@@ -92,6 +97,11 @@ const AppContainer = React.createClass({
         if (this.props.callStatus === 'out') {
             return <View>
                 <Text>You are dialing {this.props.callToNumber}</Text>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {this.hangup()}}>
+                    <Text style={styles.buttonText}>Hang Up</Text>
+                </TouchableOpacity>
             </View>
         }
         if (this.props.callStatus === 'in') {
@@ -194,6 +204,6 @@ function mapStateToProps(state) {
 export default connect(
     mapStateToProps,
     dispatch => ({
-        telephonyActions: bindActionCreators({initTelephonyStart, makeCallStart}, dispatch),
+        telephonyActions: bindActionCreators({initTelephonyStart, makeCallStart, endCall}, dispatch),
     })
 )(AppContainer)

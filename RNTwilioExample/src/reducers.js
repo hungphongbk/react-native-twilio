@@ -147,6 +147,7 @@ function callState(state = callInitialState, action = {}) {
             })
 
         case END_CALL:
+            telephonyService.endCall()
             return Object.assign({}, state, {
                 callStatus: '',
                 callFromNumber: null,
