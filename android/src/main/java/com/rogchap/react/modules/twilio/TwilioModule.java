@@ -14,7 +14,6 @@ import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.app.PendingIntent;
 
-import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
@@ -24,8 +23,7 @@ import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
-
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import com.twilio.client.Connection;
 import com.twilio.client.ConnectionListener;
@@ -61,6 +59,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
         }
 
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "onReceive");
             Device device = intent.getParcelableExtra(Device.EXTRA_DEVICE);
             Connection incomingConnection = intent.getParcelableExtra(Device.EXTRA_CONNECTION);
 
@@ -73,11 +72,15 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
             _pendingConnection = incomingConnection;
 
             Map<String, String> connParams = _pendingConnection.getParameters();
-            WritableMap params = Arguments.createMap();
-            for (Map.Entry<String, String> entry : connParams.entrySet()) {
-                params.putString(entry.getKey(), entry.getValue());
+            if (connParams != null) {
+                WritableMap params = Arguments.createMap();
+                for (Map.Entry<String, String> entry : connParams.entrySet()) {
+                    params.putString(entry.getKey(), entry.getValue());
+                }
+                sendEvent("deviceDidReceiveIncoming", params);
+            } else {
+                sendEvent("deviceDidReceiveIncoming", null);
             }
-            sendEvent("deviceDidReceiveIncoming", params);
         }
     }
 
@@ -85,7 +88,6 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
         super(reactContext);
 
         _reactContext = reactContext;
-        this._reactContext = reactContext;
         this._receiver = new IntentReceiver(this);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("com.rogchap.react.modules.twilio.incoming");
@@ -93,8 +95,8 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     }
 
     private void sendEvent(String eventName, @Nullable WritableMap params) {
-        getReactApplicationContext()
-                .getJSModule(RCTNativeAppEventEmitter.class)
+        _reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
         Log.d(TAG, "event sent " + eventName);
     }
@@ -107,13 +109,12 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     @ReactMethod
     public void initWithToken(final String token) {
         final DeviceListener dl = this;
-
+        Twilio.setLogLevel(Log.DEBUG);
         if (!Twilio.isInitialized()) {
             // Twilio.initialize(_reactContext.getApplicationContext(), new Twilio.InitListener() {
             Twilio.initialize(_reactContext, new Twilio.InitListener() {
                 @Override
                 public void onInitialized() {
-                    Twilio.setLogLevel(Log.DEBUG);
                     try {
                         if (_phone == null) {
                             createDeviceWithToken(token, dl);
@@ -185,7 +186,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     @ReactMethod
     public void connect(ReadableMap readableMap) {
         if (_phone != null) {
-            _connection = _phone.connect(covnertToNativeMap(readableMap), this);
+            _connection = _phone.connect(convertToNativeMap(readableMap), this);
         } else {
             Log.e(TAG, "Device is null");
             WritableMap errors = Arguments.createMap();
@@ -194,7 +195,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
         }
     }
 
-    private Map<String, String> covnertToNativeMap(ReadableMap readableMap) {
+    private Map<String, String> convertToNativeMap(ReadableMap readableMap) {
         Map<String, String> hashMap = new HashMap<String, String>();
         ReadableMapKeySetIterator iterator = readableMap.keySetIterator();
         while (iterator.hasNextKey()) {
@@ -289,45 +290,56 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
 
     @Override
     public void onConnecting(Connection connection) {
+        Log.d(TAG, "onConnecting");
         Map<String, String> connParams = connection.getParameters();
         WritableMap params = Arguments.createMap();
-        for (Map.Entry<String, String> entry : connParams.entrySet()) {
-            params.putString(entry.getKey(), entry.getValue());
+        if (connParams != null) {
+            for (Map.Entry<String, String> entry : connParams.entrySet()) {
+                params.putString(entry.getKey(), entry.getValue());
+            }
         }
         sendEvent("connectionDidStartConnecting", params);
     }
 
     @Override
     public void onConnected(Connection connection) {
-        Map<String, String> connParams = connection.getParameters();
-        WritableMap params = Arguments.createMap();
-        for (Map.Entry<String, String> entry : connParams.entrySet()) {
-            params.putString(entry.getKey(), entry.getValue());
-        }
-        sendEvent("connectionDidConnect", params);
+        Log.d(TAG, "onConnected");
+//        // this block makes the app crash
+//        WritableMap params = Arguments.createMap();
+//        Map<String, String> connParams = connection.getParameters();
+//        if (connParams != null) {
+//            for (Map.Entry<String, String> entry : connParams.entrySet()) {
+//                params.putString(entry.getKey(), entry.getValue());
+//            }
+//        }
+//        sendEvent("connectionDidConnect", params);
     }
 
     @Override
     public void onDisconnected(Connection connection) {
+        Log.d(TAG, "onDisconnected");
         if (connection == _connection) {
             _connection = null;
         }
         if (connection == _pendingConnection) {
             _pendingConnection = null;
         }
-        Map<String, String> connParams = connection.getParameters();
-        WritableMap params = Arguments.createMap();
-        for (Map.Entry<String, String> entry : connParams.entrySet()) {
-            params.putString(entry.getKey(), entry.getValue());
-        }
-        sendEvent("connectionDidDisconnect", params);
+//        // this block makes the app crash
+//        Map<String, String> connParams = connection.getParameters();
+//        WritableMap params = Arguments.createMap();
+//        if (connParams != null) {
+//            for (Map.Entry<String, String> entry : connParams.entrySet()) {
+//                params.putString(entry.getKey(), entry.getValue());
+//            }
+//        }
+//        sendEvent("connectionDidDisconnect", params);
     }
 
     @Override
     public void onDisconnected(Connection connection, int errorCode, String errorMessage) {
         WritableMap errors = Arguments.createMap();
         errors.putString("err", errorMessage);
-        sendEvent("connectionDidFail", errors);
+        sendEvent("connectionDidDisconnect", errors);
     }
 
 }

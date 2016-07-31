@@ -76,6 +76,7 @@ function callState(state = callInitialState, action = {}) {
             })
 
         case CONNECTION_SUCCESS:
+            console.log('### CONNECTION_SUCCESS', action.params)
             return Object.assign({}, state, {
                 callStatus: 'out',
             })
@@ -89,6 +90,7 @@ function callState(state = callInitialState, action = {}) {
             })
 
         case CONNECTION_STOP:
+            console.log('### CONNECTION_STOP', action.params)
             return Object.assign({}, state, {
                 callStatus: '',
                 callFromNumber: null,
@@ -147,6 +149,7 @@ function callState(state = callInitialState, action = {}) {
             })
 
         case END_CALL:
+            telephonyService.endCall()
             return Object.assign({}, state, {
                 callStatus: '',
                 callFromNumber: null,

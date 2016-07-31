@@ -4,6 +4,7 @@ import React, {PropTypes} from 'react'
 import {
     StyleSheet,
     Text,
+    TouchableOpacity,
     View,
 } from 'react-native'
 import { connect } from 'react-redux'
@@ -12,9 +13,10 @@ import {bindActionCreators} from 'redux'
 import {
     initTelephonyStart,
     makeCallStart,
+    endCall,
+    acceptCall,
 } from '../actions'
 
-import Button from 'react-native-button'
 import InputPrompt from '../components/InputPrompt'
 
 const AppContainer = React.createClass({
@@ -32,11 +34,11 @@ const AppContainer = React.createClass({
         if (this.props.clientName) {
             return <View>
                 <Text>Telephone NOT READY</Text>
-                <Button
-                    containerStyle={styles.button}
+                <TouchableOpacity
+                    style={styles.button}
                     onPress={() => {this.props.telephonyActions.initTelephonyStart(this.props.clientName)}}>
                     <Text style={styles.buttonText}>init device with token</Text>
-                </Button>
+                </TouchableOpacity>
             </View>
         }
     },
@@ -76,12 +78,20 @@ const AppContainer = React.createClass({
                 keyboardType="phone-pad"
                 onSubmit={onSubmit}
                 />
-                <Button
-                    containerStyle={styles.button}
+                <TouchableOpacity
+                    style={styles.button}
                     onPress={() => {callNumber()}}>
                     <Text style={styles.buttonText}>DIAL</Text>
-                </Button>
+                </TouchableOpacity>
             </View>
+    },
+
+    hangup() {
+        this.props.telephonyActions.endCall()
+    },
+
+    answer() {
+        this.props.telephonyActions.acceptCall()
     },
 
     renderCallProgress() {
@@ -92,11 +102,21 @@ const AppContainer = React.createClass({
         if (this.props.callStatus === 'out') {
             return <View>
                 <Text>You are dialing {this.props.callToNumber}</Text>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {this.hangup()}}>
+                    <Text style={styles.buttonText}>Hang Up</Text>
+                </TouchableOpacity>
             </View>
         }
         if (this.props.callStatus === 'in') {
             return <View>
                 <Text>{this.props.callFromNumber} is calling</Text>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => {this.answer()}}>
+                    <Text style={styles.buttonText}>Answer</Text>
+                </TouchableOpacity>
             </View>
         }
     },
@@ -194,6 +214,6 @@ function mapStateToProps(state) {
 export default connect(
     mapStateToProps,
     dispatch => ({
-        telephonyActions: bindActionCreators({initTelephonyStart, makeCallStart}, dispatch),
+        telephonyActions: bindActionCreators({initTelephonyStart, makeCallStart, endCall, acceptCall}, dispatch),
     })
 )(AppContainer)

@@ -1,7 +1,9 @@
-let React = require('react-native');
-let { NativeModules, NativeAppEventEmitter } = React;
+import {
+  NativeModules,
+  NativeAppEventEmitter,
+} from 'react-native';
 
-let TwilioRCT = NativeModules.Twilio;
+const TwilioRCT = NativeModules.Twilio;
 
 let _eventHandlers = {
   deviceDidStartListening: new Map(),
