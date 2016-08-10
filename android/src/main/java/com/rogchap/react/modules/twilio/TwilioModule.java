@@ -2,21 +2,16 @@ package com.rogchap.react.modules.twilio;
 
 import android.support.annotation.Nullable;
 
-import android.Manifest;
 import android.util.Log;
 import android.app.PendingIntent;
 import android.content.Intent;
 
 import android.content.Context;
-import android.content.Intent;
-// import android.os.Parcelable;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
-import android.app.PendingIntent;
 
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
@@ -45,7 +40,6 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
 
     private static final String TAG = TwilioModule.class.getName();
 
-    private ReactContext mReactContext;
     private Device _phone;
     private Connection _connection;
     private Connection _pendingConnection;
@@ -72,34 +66,28 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
             _pendingConnection = incomingConnection;
 
             Map<String, String> connParams = _pendingConnection.getParameters();
+            WritableMap params = Arguments.createMap();
             if (connParams != null) {
-                WritableMap params = Arguments.createMap();
                 for (Map.Entry<String, String> entry : connParams.entrySet()) {
                     params.putString(entry.getKey(), entry.getValue());
                 }
-
-                sendEvent("deviceDidReceiveIncoming", params);
-            } else {
-                sendEvent("deviceDidReceiveIncoming", null);
             }
+            sendEvent("deviceDidReceiveIncoming", params);
         }
     }
 
     public TwilioModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
-        mReactContext = reactContext;
         this._receiver = new IntentReceiver(this);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("com.rogchap.react.modules.twilio.incoming");
-        mReactContext.registerReceiver(this._receiver, intentFilter);
+        getReactApplicationContext().registerReceiver(this._receiver, intentFilter);
     }
 
     private void sendEvent(String eventName, @Nullable WritableMap params) {
-        if (mReactContext == null) {
-            Log.e(TAG, "mReactContext is null");
-        }
-        mReactContext
+        Log.d(TAG, "start sending event " + eventName);
+        getReactApplicationContext()
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
         Log.d(TAG, "event sent " + eventName);
@@ -115,8 +103,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
         final DeviceListener dl = this;
         Twilio.setLogLevel(Log.DEBUG);
         if (!Twilio.isInitialized()) {
-            // Twilio.initialize(mReactContext.getApplicationContext(), new Twilio.InitListener() {
-            Twilio.initialize(mReactContext, new Twilio.InitListener() {
+            Twilio.initialize(getReactApplicationContext(), new Twilio.InitListener() {
                 @Override
                 public void onInitialized() {
                     try {
@@ -162,7 +149,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
          */
         Intent intent = new Intent();
         intent.setAction("com.rogchap.react.modules.twilio.incoming");
-        PendingIntent pi = PendingIntent.getBroadcast(mReactContext, 0, intent, 0);
+        PendingIntent pi = PendingIntent.getBroadcast(getReactApplicationContext(), 0, intent, 0);
         _phone.setIncomingIntent(pi);
         sendEvent("deviceReady", null);
     }
@@ -260,6 +247,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     /* Device Listener */
     @Override
     public void onStartListening(Device device) {
+        // this happens every 80 seconds
         Log.d(TAG, "Device has started listening for incoming connections");
         sendEvent("deviceDidStartListening", null);
     }
@@ -296,52 +284,42 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     @Override
     public void onConnecting(Connection connection) {
         Log.d(TAG, "onConnecting");
-        Map<String, String> connParams = connection.getParameters();
         WritableMap params = Arguments.createMap();
-        if (connParams != null) {
-            for (Map.Entry<String, String> entry : connParams.entrySet()) {
-                params.putString(entry.getKey(), entry.getValue());
-            }
+        if (connection.getParameters().containsKey("To")) {
+            params.putString("To", connection.getParameters().get("To"));
         }
         sendEvent("connectionDidStartConnecting", params);
     }
 
     @Override
     public void onConnected(Connection connection) {
-        Log.d(TAG, "onConnected");
-//        // this block makes the app crash
-//        WritableMap params = Arguments.createMap();
-//        Map<String, String> connParams = connection.getParameters();
-//        if (connParams != null) {
-//            for (Map.Entry<String, String> entry : connParams.entrySet()) {
-//                params.putString(entry.getKey(), entry.getValue());
-//            }
-//        }
-//        sendEvent("connectionDidConnect", params);
+        Log.d(TAG, "onConnected: connection");
+        WritableMap params = Arguments.createMap();
+        if (connection.getParameters().containsKey("To")) {
+            params.putString("To", connection.getParameters().get("To"));
+        }
+        sendEvent("connectionDidConnect", params);
     }
 
     @Override
     public void onDisconnected(Connection connection) {
-        Log.d(TAG, "onDisconnected");
+        Log.d(TAG, "onDisconnected: connection");
         if (connection == _connection) {
             _connection = null;
         }
         if (connection == _pendingConnection) {
             _pendingConnection = null;
         }
-//        // this block makes the app crash
-//        Map<String, String> connParams = connection.getParameters();
-//        WritableMap params = Arguments.createMap();
-//        if (connParams != null) {
-//            for (Map.Entry<String, String> entry : connParams.entrySet()) {
-//                params.putString(entry.getKey(), entry.getValue());
-//            }
-//        }
-//        sendEvent("connectionDidDisconnect", params);
+        WritableMap params = Arguments.createMap();
+        if (connection.getParameters().containsKey("To")) {
+            params.putString("To", connection.getParameters().get("To"));
+        }
+        sendEvent("connectionDidDisconnect", params);
     }
 
     @Override
     public void onDisconnected(Connection connection, int errorCode, String errorMessage) {
+        Log.d(TAG, "onDisconnected: connection");
         WritableMap errors = Arguments.createMap();
         errors.putString("err", errorMessage);
         sendEvent("connectionDidDisconnect", errors);
