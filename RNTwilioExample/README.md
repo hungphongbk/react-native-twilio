@@ -52,5 +52,11 @@ ENVFILE=.env react-native run-android
 # this should be it!
 ```
 
+### adb wireless
+
+Please follow this instructions
+
+
 If you find problems with this instructions or want to make them more clear open an issue or PR respectively.
 
+then setup on teh device app `Dev Settings` > `Debug server host & port for device` and type your development machine IP:PORT for example 192.168.0.1:8081
