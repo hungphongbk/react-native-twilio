@@ -13,6 +13,4 @@
 
           <!-- needed to receive audio from microphone during a call -->
           <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-
-          <uses-permission android:name="android.permission.BLUETOOTH"/>
 </manifest>
