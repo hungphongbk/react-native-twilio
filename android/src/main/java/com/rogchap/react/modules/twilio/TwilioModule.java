@@ -45,7 +45,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
 
     private static final String TAG = TwilioModule.class.getName();
 
-    private ReactContext _reactContext;
+    private ReactContext mReactContext;
     private Device _phone;
     private Connection _connection;
     private Connection _pendingConnection;
@@ -77,6 +77,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
                 for (Map.Entry<String, String> entry : connParams.entrySet()) {
                     params.putString(entry.getKey(), entry.getValue());
                 }
+
                 sendEvent("deviceDidReceiveIncoming", params);
             } else {
                 sendEvent("deviceDidReceiveIncoming", null);
@@ -87,16 +88,18 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     public TwilioModule(ReactApplicationContext reactContext) {
         super(reactContext);
 
-        _reactContext = reactContext;
-        this._reactContext = reactContext;
+        mReactContext = reactContext;
         this._receiver = new IntentReceiver(this);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("com.rogchap.react.modules.twilio.incoming");
-        this._reactContext.registerReceiver(this._receiver, intentFilter);
+        mReactContext.registerReceiver(this._receiver, intentFilter);
     }
 
     private void sendEvent(String eventName, @Nullable WritableMap params) {
-        _reactContext
+        if (mReactContext == null) {
+            Log.e(TAG, "mReactContext is null");
+        }
+        mReactContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
         Log.d(TAG, "event sent " + eventName);
@@ -112,8 +115,8 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
         final DeviceListener dl = this;
         Twilio.setLogLevel(Log.DEBUG);
         if (!Twilio.isInitialized()) {
-            // Twilio.initialize(_reactContext.getApplicationContext(), new Twilio.InitListener() {
-            Twilio.initialize(_reactContext, new Twilio.InitListener() {
+            // Twilio.initialize(mReactContext.getApplicationContext(), new Twilio.InitListener() {
+            Twilio.initialize(mReactContext, new Twilio.InitListener() {
                 @Override
                 public void onInitialized() {
                     try {
@@ -134,6 +137,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
                 }
             });
         } else {
+            Log.d(TAG, "device was already initialized");
             try {
                 if (_phone != null) {
                     _phone.release();
@@ -158,7 +162,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
          */
         Intent intent = new Intent();
         intent.setAction("com.rogchap.react.modules.twilio.incoming");
-        PendingIntent pi = PendingIntent.getBroadcast(_reactContext, 0, intent, 0);
+        PendingIntent pi = PendingIntent.getBroadcast(mReactContext, 0, intent, 0);
         _phone.setIncomingIntent(pi);
         sendEvent("deviceReady", null);
     }
@@ -245,7 +249,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
             _connection.setMuted(isMuted);
         }
     }
-    
+
     @ReactMethod
     public void sendDigits(String digits) {
         if (_connection != null && _connection.getState() == Connection.State.CONNECTED) {
