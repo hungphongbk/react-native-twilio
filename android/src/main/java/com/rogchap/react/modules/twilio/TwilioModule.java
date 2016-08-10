@@ -88,6 +88,7 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
         super(reactContext);
 
         _reactContext = reactContext;
+        this._reactContext = reactContext;
         this._receiver = new IntentReceiver(this);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("com.rogchap.react.modules.twilio.incoming");
