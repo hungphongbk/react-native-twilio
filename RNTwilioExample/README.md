@@ -1,5 +1,11 @@
 # react-native-twilio example project
 
+The Example show you how to:
+
+- initialize the device
+- make calls
+- receive calls
+
 # ios
 Currently the ios example app is not done.
 
@@ -9,23 +15,32 @@ Currently the ios example app is not done.
 
 ### server
 
-Download and run a simple server with your Twilio credentials.
-For example you can use:
-[mobile-quickstart](https://github.com/twilio/mobile-quickstart)
+The server must implement:
+- GET /token/
+- POST /calls/
+
+If you don't have your server code yet you can simply use a server example provided by Twilio. The simplier way is to download and run a the Python example
+[mobile-quickstart](https://github.com/twilio/mobile-quickstart).
+
+You will need to amend `server.py` to use your Twilio credentials.
+
 
 The app only needs two endpoints running:
 
 	# TwiML response for incoming/outgoing calls
 	GET or POST http://localhost:5000/calls/
+  
 	# generate a JWT token for the app to initialise the device
 	GET http://localhost:5000/token/
 
 
-You will need to setup an TwiML app through the Twilio Console and use the `APP_ID` for the server configuration.
+Setup an TwiML app through the Twilio Console and use the `APP_ID` for the server configuration.
 
-You will need to expose the server to the outside so that Twilio can contact it when it looks for the TwiML to answer calls. You can use [ngrok](https://ngrok.com/) to do that
-
+Then you need to expose the server to the outside world so that Twilio can contact it when it looks for the TwiML to answer calls. You can use [ngrok](https://ngrok.com/) to do that
+ 
 	./ngrok http 5000
+ 	# 5000 is the port you specified in server.py
+
 
 ### react-native
 You will need to have `react-native` installed and available in your `PATH`.
@@ -48,15 +63,25 @@ npm start
 
 # compile and install a debug build
 ENVFILE=.env react-native run-android
+# or simply
+react-native run-android
+# because .env is the default config file
 
-# this should be it!
+# that is it!
 ```
 
 ### adb wireless
 
-Please follow this instructions
+Please follow the instructions on how to connect adb wireless. You can simply search on the Internet for that.
 
+Then setup your app to communicate with the host machine.
+From The app development screen go to `Dev Settings` > `Debug server host & port for device` and type your development machine IP:PORT for example
+```
+192.168.0.1:8081
+```
 
-If you find problems with this instructions or want to make them more clear open an issue or PR respectively.
+Now `reload JS` and you should be connected.
 
-then setup on teh device app `Dev Settings` > `Debug server host & port for device` and type your development machine IP:PORT for example 192.168.0.1:8081
+# help
+
+If you spot some problems with this instructions or want to help clarifying them feel free to open a PR.
