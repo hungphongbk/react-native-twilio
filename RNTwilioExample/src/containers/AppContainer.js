@@ -54,7 +54,7 @@ const AppContainer = React.createClass({
     },
 
     renderInputNumber() {
-        if (this.props.deviceReady === false) {
+        if (this.props.deviceReady === false || this.props.listening === false) {
             return null
         }
 
@@ -99,7 +99,7 @@ const AppContainer = React.createClass({
             return null
         }
 
-        if (this.props.callStatus === 'out') {
+        if (this.props.callDirection === 'out') {
             return <View>
                 <Text>You are dialing {this.props.callToNumber}</Text>
                 <TouchableOpacity
@@ -109,7 +109,7 @@ const AppContainer = React.createClass({
                 </TouchableOpacity>
             </View>
         }
-        if (this.props.callStatus === 'in') {
+        if (this.props.callDirection === 'in') {
             return <View>
                 <Text>{this.props.callFromNumber} is calling</Text>
                 <TouchableOpacity
@@ -150,7 +150,7 @@ AppContainer.propTypes = {
     callToNumber:     PropTypes.string,
     callFromNumber:   PropTypes.string,
     callingError:     PropTypes.string,
-    callStatus:       PropTypes.string,
+    callDirection:    PropTypes.string,
     listening:        PropTypes.bool.isRequired,
 }
 
@@ -187,7 +187,6 @@ function mapStateToProps(state) {
         callState,
     } = state
     const {
-        initTelephony,
         deviceReady,
         clientName,
     } = telephonyState
@@ -196,17 +195,16 @@ function mapStateToProps(state) {
         callToNumber,
         callFromNumber,
         callingError,
-        callStatus,
+        callDirection,
         listening,
     } = callState
     return {
-        initTelephony,
         deviceReady,
         clientName,
         callToNumber,
         callFromNumber,
         callingError,
-        callStatus,
+        callDirection,
         listening,
     }
 }

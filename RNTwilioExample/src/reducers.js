@@ -22,14 +22,13 @@ import {
 
 
 const telephonyInitialState = {
-    initTelephony: false,
-    deviceReady:   false,
-    deviceError:   null,
-    clientName:    'jenny',
+    deviceReady: false,
+    deviceError: null,
+    clientName:  'jenny',
 }
 
 const callInitialState = {
-    callStatus:     '',
+    callDirection:  null,
     callingError:   null,
     callFromNumber: null,
     callToNumber:   null,
@@ -41,21 +40,18 @@ function telephonyState(state = telephonyInitialState, action = {}) {
         case INIT_TELEPHONY_START:
             telephonyService.init(action.client)
             return Object.assign({}, state, {
-                initTelephony: true,
                 deviceError: null,
             })
 
         case DEVICE_READY:
             telephonyService.initListeners()
             return Object.assign({}, state, {
-                initTelephony: false,
                 deviceReady: true,
                 deviceError: null,
             })
 
         case DEVICE_CREATION_FAILURE:
             return Object.assign({}, state, {
-                initTelephony: false,
                 deviceReady: false,
                 deviceError: action.err,
             })
@@ -70,20 +66,17 @@ function callState(state = callInitialState, action = {}) {
         case CONNECTION_START:
             console.log('### CONNECTION_START', action)
             return Object.assign({}, state, {
-                callStatus: 'out',
                 callFromNumber: action.From,
                 callToNumber: action.To,
             })
 
         case CONNECTION_SUCCESS:
             console.log('### CONNECTION_SUCCESS', action.params)
-            return Object.assign({}, state, {
-                callStatus: 'out',
-            })
+            return state
 
         case CONNECTION_FAILURE:
             return Object.assign({}, state, {
-                callStatus: 'out',
+                callDirection: null,
                 callFromNumber: null,
                 callToNumber: null,
                 callingError: action.err,
@@ -92,15 +85,15 @@ function callState(state = callInitialState, action = {}) {
         case CONNECTION_STOP:
             console.log('### CONNECTION_STOP', action.params)
             return Object.assign({}, state, {
-                callStatus: '',
                 callFromNumber: null,
                 callToNumber: null,
+                callingError: action.err,
             })
 
         case CALL_START:
             telephonyService.makeCall(action.number)
             return Object.assign({}, state, {
-                callStatus: 'out',
+                callDirection: 'out',
                 callFromNumber: null,
                 callToNumber: action.number,
                 callingError: null,
@@ -113,7 +106,7 @@ function callState(state = callInitialState, action = {}) {
 
         case DEVICE_RECEIVED_INCOMING:
             return Object.assign({}, state, {
-                callStatus: 'in',
+                callDirection: 'in',
                 callFromNumber: action.From,
                 callToNumber: null,
                 callingError: null,
@@ -133,7 +126,7 @@ function callState(state = callInitialState, action = {}) {
         case REJECT_CALL:
             telephonyService.rejectCall()
             return Object.assign({}, state, {
-                callStatus: '',
+                callDirection: null,
                 callFromNumber: null,
                 callToNumber: null,
                 callingError: null,
@@ -142,7 +135,7 @@ function callState(state = callInitialState, action = {}) {
         case IGNORE_CALL:
             telephonyService.ignoreCall()
             return Object.assign({}, state, {
-                callStatus: '',
+                callDirection: null,
                 callFromNumber: null,
                 callToNumber: null,
                 callingError: null,
@@ -151,7 +144,7 @@ function callState(state = callInitialState, action = {}) {
         case END_CALL:
             telephonyService.endCall()
             return Object.assign({}, state, {
-                callStatus: '',
+                callDirection: null,
                 callFromNumber: null,
                 callToNumber: null,
                 callingError: null,
