@@ -72,10 +72,8 @@ let telephonyService = {
         // Twilio.initWithTokenUrl(url)
 
         return fetch(url)
-            .then((res) => {
-                return res.text()
-            })
-            .then((token) => {
+            .then(res => res.text())
+            .then(token => {
                 console.log('token =>', token)
                 Twilio.initWithToken(token)
                 return true
@@ -107,13 +105,6 @@ let telephonyService = {
         console.log('telephonyService::endCall()')
         Twilio.disconnect()
         return
-    },
-    findCalls(params) {
-        let urlEncodedQuery = qs.stringify(params)
-        let url = `${endpoints.calls.findCalls}?${urlEncodedQuery}`
-        return fetch(url)
-            .then((res) => res.json())
-            .then((data) => data.calls_list)
     },
     initDeviceListeners() {
         Twilio.addEventListener('deviceReady', _deviceReady)

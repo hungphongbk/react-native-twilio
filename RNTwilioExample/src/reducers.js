@@ -121,7 +121,7 @@ function callState(state = callInitialState, action = {}) {
 
         case DEVICE_LISTENING_STOP:
             return Object.assign({}, state, {
-                callStatus: 'in',
+                listening: false,
             })
 
         case ACCEPT_CALL:
