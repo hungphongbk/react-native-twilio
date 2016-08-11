@@ -264,7 +264,11 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     public void onStopListening(Device device, int errorCode, String error) {
         Log.e(TAG, String.format("Device has encountered an error and has stopped" +
                 " listening for incoming connections: %s", error));
-        sendEvent("deviceDidStopListening", null);
+        WritableMap errors = Arguments.createMap();
+        if (error != null) {
+            errors.putString("err", error);
+        }
+        sendEvent("deviceDidStopListening", errors);
     }
 
     /* Device Listener */
