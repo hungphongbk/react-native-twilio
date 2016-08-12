@@ -86,11 +86,15 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     }
 
     private void sendEvent(String eventName, @Nullable WritableMap params) {
-        Log.d(TAG, "start sending event " + eventName);
-        getReactApplicationContext()
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(eventName, params);
-        Log.d(TAG, "event sent " + eventName);
+        Log.d(TAG, ">>> sendEvent: start sending event (" + eventName + ")");
+        if (params != null) {
+            Log.d(TAG, ">>> sendEvent: params: " + params.toString() + ")");
+        }
+        DeviceEventManagerModule.RCTDeviceEventEmitter deviceEE = getReactApplicationContext()
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class);
+        Log.d(TAG, ">>> sendEvent: after creating device event emitter (" + eventName + ")");
+        deviceEE.emit(eventName, params);
+        Log.d(TAG, ">>> sendEvent: after emitting event (" + eventName + ")");
     }
 
     @Override
@@ -249,7 +253,9 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
     public void onStartListening(Device device) {
         // this happens every 80 seconds
         Log.d(TAG, "Device has started listening for incoming connections");
-        sendEvent("deviceDidStartListening", null);
+        // this event crashes the app when sent after the first time.
+        // commenting out it for now.
+        // sendEvent("deviceDidStartListening", null);
     }
 
     /* Device Listener */
@@ -307,15 +313,18 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
 
     @Override
     public void onDisconnected(Connection connection) {
-        Log.d(TAG, "onDisconnected: connection");
+        Log.d(TAG, "onDisconnected: connection " + connection.toString());
         if (connection == _connection) {
             _connection = null;
         }
+        Log.d(TAG, "onDisconnected: after _connection = null " + connection.toString());
         if (connection == _pendingConnection) {
             _pendingConnection = null;
         }
+        Log.d(TAG, "onDisconnected: after _pendingConnection = null " + connection.toString());
         WritableMap params = Arguments.createMap();
         if (connection.getParameters().containsKey("To")) {
+            Log.d(TAG, "onDisconnected: containsKey To " + connection.toString());
             params.putString("To", connection.getParameters().get("To"));
         }
         sendEvent("connectionDidDisconnect", params);
@@ -323,8 +332,9 @@ public class TwilioModule extends ReactContextBaseJavaModule implements Connecti
 
     @Override
     public void onDisconnected(Connection connection, int errorCode, String errorMessage) {
-        Log.d(TAG, "onDisconnected: connection");
+        Log.d(TAG, "onDisconnected with error" + errorMessage );
         WritableMap errors = Arguments.createMap();
+        Log.d(TAG, "onDisconnected with error: after error definition" + errorMessage );
         errors.putString("err", errorMessage);
         sendEvent("connectionDidDisconnect", errors);
     }
