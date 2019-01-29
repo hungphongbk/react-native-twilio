@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
-    implementation('com.facebook.react:react-native:0.55.4'){force = true} // from node_modules
-    implementation 'com.twilio:client-android:1.2.16'
+    implementation 'com.facebook.react:react-native:0.55.4' // from node_modules
+    implementation group: "com.twilio.sdk", name: "twilio", version: "7.34.1"
+
 }

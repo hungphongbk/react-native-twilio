@@ -15,7 +15,7 @@ public class TwilioPackage implements ReactPackage {
   @Override
   public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
     return Arrays.<NativeModule>asList(
-      new TwilioModule(reactContext)
+      new TwilioModuleV2(reactContext)
     );
   }
 

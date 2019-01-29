@@ -20,12 +20,16 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import com.twilio.client.Connection;
-import com.twilio.client.ConnectionListener;
-import com.twilio.client.Device;
-import com.twilio.client.DeviceListener;
-import com.twilio.client.PresenceEvent;
-import com.twilio.client.Twilio;
+//import com.twilio.client.Connection;
+//import com.twilio.client.ConnectionListener;
+//import com.twilio.client.Device;
+//import com.twilio.client.DeviceListener;
+//import com.twilio.client.PresenceEvent;
+//import com.twilio.client.Twilio;
+
+import com.twilio.Twilio;
+import com.twilio.converter.Promoter;
+import com.twilio.rest.notify.v1.service.Notification;
 
 import java.net.URL;
 import java.net.URLConnection;
@@ -36,7 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class TwilioModule extends ReactContextBaseJavaModule implements ConnectionListener, DeviceListener {
+public class TwilioModule extends ReactContextBaseJavaModule /*implements ConnectionListener, DeviceListener*/ {
 
     private static final String TAG = TwilioModule.class.getName();
 
