@@ -17,5 +17,8 @@
     "ios"
   ],
   "author": "Roger Chapman",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "react-native": "^0.55.4"
+  }
 }
